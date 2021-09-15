@@ -60,31 +60,31 @@ class UserAverageLikesView(APIView):
                     tzinfo=timezone(settings.TIME_ZONE)).date()
         thirty_days_before = now - timedelta(days=days)
 
-        # try:
-        posts_likes =  PostLikes.objects.filter(
-                            user_id=int(user_id)
-                        ).filter(
-                            created_at__gte=thirty_days_before
-                        )
-        likes_avg = list()
-        for i in range(days):
-            day = now - timedelta(days=days-i)
-            likes_count_avg = posts_likes.filter(
-                Q(created_at__gt=now - timedelta(days=days-i-1)),
-                Q(created_at__lte=now - timedelta(days=days-i))
-            ).order_by(
-                'post_id', '-created_at'
-            ).distinct('post_id').aggregate(Avg('likes_count'))
+        try:
+            posts_likes =  PostLikes.objects.filter(
+                                user_id=int(user_id)
+                            ).filter(
+                                created_at__gte=thirty_days_before
+                            )
+            likes_avg = list()
+            for i in range(days):
+                day = now - timedelta(days=days-i)
+                likes_count_avg = posts_likes.filter(
+                    Q(created_at__gt=now - timedelta(days=days-i-1)),
+                    Q(created_at__lte=now - timedelta(days=days-i))
+                ).order_by(
+                    'post_id', '-created_at'
+                ).distinct('post_id').aggregate(Avg('likes_count'))
 
-            likes_avg.append(
-                {
-                    'day': day.strftime("%Y-%m-%d"),
-                    'avg': likes_count_avg['avg']
-                }
-            )
+                likes_avg.append(
+                    {
+                        'day': day.strftime("%Y-%m-%d"),
+                        'avg': likes_count_avg['avg']
+                    }
+                )
 
-        return Response(likes_avg)
+            return Response(likes_avg)
 
-        # except:
-        #     return Response({})
+        except:
+            return Response({})
 
